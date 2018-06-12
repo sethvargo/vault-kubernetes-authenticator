@@ -31,7 +31,8 @@ metadata:
 spec:
   volumes:
   - name: vault-token
-    emptyDir: {}
+    emptyDir:
+      medium: "Memory"
 
   initContainers:
   # The vault-authenticator container authenticates the container using the
