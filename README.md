@@ -32,7 +32,7 @@ spec:
   volumes:
   - name: vault-token
     emptyDir:
-      medium: "Memory"
+      medium: Memory
 
   initContainers:
   # The vault-authenticator container authenticates the container using the
