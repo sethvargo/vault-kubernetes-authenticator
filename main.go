@@ -19,11 +19,12 @@ import (
 )
 
 var (
-	vaultAddr       string
-	vaultCaPem      string
-	vaultCaCert     string
-	vaultCaPath     string
-	vaultServerName string
+	vaultAddr         string
+	vaultCaPem        string
+	vaultCaCert       string
+	vaultCaPath       string
+	vaultServerName   string
+	vaultK8SMountPath string
 )
 
 func main() {
@@ -36,6 +37,11 @@ func main() {
 	vaultCaCert = os.Getenv("VAULT_CACERT")
 	vaultCaPath = os.Getenv("VAULT_CAPATH")
 	vaultServerName = os.Getenv("VAULT_TLS_SERVER_NAME")
+
+	vaultK8SMountPath = os.Getenv("VAULT_K8S_MOUNT_PATH")
+	if vaultK8SMountPath == "" {
+		vaultK8SMountPath = "kubernetes"
+	}
 
 	role := os.Getenv("VAULT_ROLE")
 	if role == "" {
@@ -111,7 +117,7 @@ func authenticate(role, jwt string) (string, error) {
 		Transport: transport,
 	}
 
-	addr := vaultAddr + "/v1/auth/kubernetes/login"
+	addr := vaultAddr + "/v1/auth/" + vaultK8SMountPath + "/login"
 	body := fmt.Sprintf(`{"role": "%s", "jwt": "%s"}`, role, jwt)
 
 	req, err := http.NewRequest(http.MethodPost, addr, strings.NewReader(body))

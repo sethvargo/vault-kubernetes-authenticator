@@ -22,6 +22,12 @@ The `vault-kubernetes-authenticator` is a small application/container that perfo
 
 - `SERVICE_ACCOUNT_PATH` - the path on disk where the kubernetes service account jtw token lives. This defaults to `/var/run/secrets/kubernetes.io/serviceaccount/token`.
 
+- `VAULT_K8S_MOUNT_PATH` - the name of the mount where the Kubernetes auth method is enabled. This defaults to `kubernetes`, but if you changed the mount path you will need to set this value to that path.
+
+  ```text
+  vault auth enable -path=k8s kubernetes -> VAULT_K8S_MOUNT_PATH=k8s
+  ```
+
 ## Example Usage
 
 ```yaml
