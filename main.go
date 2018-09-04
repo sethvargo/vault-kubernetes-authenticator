@@ -23,6 +23,7 @@ var (
 	vaultCaPem        string
 	vaultCaCert       string
 	vaultCaPath       string
+	vaultSkipVerify   string
 	vaultServerName   string
 	vaultK8SMountPath string
 )
@@ -37,6 +38,7 @@ func main() {
 	vaultCaCert = os.Getenv("VAULT_CACERT")
 	vaultCaPath = os.Getenv("VAULT_CAPATH")
 	vaultServerName = os.Getenv("VAULT_TLS_SERVER_NAME")
+	vaultSkipVerify = os.Getenv("VAULT_SKIP_VERIFY")
 
 	vaultK8SMountPath = os.Getenv("VAULT_K8S_MOUNT_PATH")
 	if vaultK8SMountPath == "" {
@@ -99,6 +101,14 @@ func authenticate(role, jwt string) (string, error) {
 	tlsClientConfig := &tls.Config{
 		MinVersion: tls.VersionTLS12,
 		RootCAs:    rootCAs,
+	}
+
+	if vaultSkipVerify == "true"{
+		tlsClientConfig = &tls.Config{
+			MinVersion: 		tls.VersionTLS12,
+			RootCAs:    		rootCAs,
+			InsecureSkipVerify: true,
+		}
 	}
 
 	if vaultServerName != "" {
