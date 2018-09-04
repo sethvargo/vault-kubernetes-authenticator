@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -23,7 +24,7 @@ var (
 	vaultCaPem        string
 	vaultCaCert       string
 	vaultCaPath       string
-	vaultSkipVerify   string
+	vaultSkipVerify   bool
 	vaultServerName   string
 	vaultK8SMountPath string
 )
@@ -38,7 +39,14 @@ func main() {
 	vaultCaCert = os.Getenv("VAULT_CACERT")
 	vaultCaPath = os.Getenv("VAULT_CAPATH")
 	vaultServerName = os.Getenv("VAULT_TLS_SERVER_NAME")
-	vaultSkipVerify = os.Getenv("VAULT_SKIP_VERIFY")
+
+	if s := os.Getenv("VAULT_SKIP_VERIFY"); s != "" {
+		b, err := strconv.ParseBool(s)
+		if err != nil {
+			log.Fatal(err)
+		}
+		vaultSkipVerify = b
+	}
 
 	vaultK8SMountPath = os.Getenv("VAULT_K8S_MOUNT_PATH")
 	if vaultK8SMountPath == "" {
@@ -103,12 +111,8 @@ func authenticate(role, jwt string) (string, error) {
 		RootCAs:    rootCAs,
 	}
 
-	if vaultSkipVerify == "true"{
-		tlsClientConfig = &tls.Config{
-			MinVersion:         tls.VersionTLS12,
-			RootCAs:            rootCAs,
-			InsecureSkipVerify: true,
-		}
+	if vaultSkipVerify {
+		tlsClientConfig.InsecureSkipVerify = true
 	}
 
 	if vaultServerName != "" {
