@@ -12,9 +12,11 @@ The `vault-kubernetes-authenticator` is a small application/container that perfo
 
 - `VAULT_CAPEM` - the raw PEM contents of the CA file to use for SSL verification.
 
-- `VAULT_CACERT` - the path on disk to a single CA file to use for TSL verification. 
+- `VAULT_CACERT` - the path on disk to a single CA file to use for TSL verification.
 
 - `VAULT_CAPATH` - the path on disk to a directory of CA files (non-recursive) to use for TLS verification.
+
+- `VAULT_SKIP_VERIFY` - disable SSL validation (not recommended)
 
 - `VAULT_ROLE` - **Required** the name of the Vault role to use for authentication.
 
