@@ -105,8 +105,8 @@ func authenticate(role, jwt string) (string, error) {
 
 	if vaultSkipVerify == "true"{
 		tlsClientConfig = &tls.Config{
-			MinVersion: 		tls.VersionTLS12,
-			RootCAs:    		rootCAs,
+			MinVersion:         tls.VersionTLS12,
+			RootCAs:            rootCAs,
 			InsecureSkipVerify: true,
 		}
 	}
