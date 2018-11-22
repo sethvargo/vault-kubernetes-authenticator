@@ -48,7 +48,7 @@ spec:
   # The vault-authenticator container authenticates the container using the
   # kubernetes auth method and puts the resulting token on the filesystem.
   - name: vault-authenticator
-    image: sethvargo/vault-kubernetes-authenticator:0.1.0
+    image: sethvargo/vault-kubernetes-authenticator:latest
     volumeMounts:
     - name: vault-token
       mountPath: /home/vault
