@@ -58,9 +58,13 @@ func main() {
 		log.Fatal("missing VAULT_ROLE")
 	}
 
-	dest := os.Getenv("TOKEN_DEST_PATH")
-	if dest == "" {
-		dest = "/.vault-token"
+	tokenDest := os.Getenv("TOKEN_DEST_PATH")
+	if tokenDest == "" {
+		tokenDest = "/.vault-token"
+	}
+	accessorDest := os.Getenv("ACCESSOR_DEST_PATH")
+	if accessorDest == "" {
+		accessorDest = "/.vault-accessor"
 	}
 
 	saPath := os.Getenv("SERVICE_ACCOUNT_PATH")
@@ -75,17 +79,23 @@ func main() {
 	}
 
 	// Authenticate to vault using the jwt token
-	token, err := authenticate(role, jwt)
+	token, accessor, err := authenticate(role, jwt)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	// Persist the vault token to disk
-	if err := saveToken(token, dest); err != nil {
+	if err := saveToken(token, tokenDest); err != nil {
+		log.Fatal(err)
+	}
+	
+	// Persist the vault accessor to disk
+	if err := saveAccessor(accessor, accessorDest); err != nil {
 		log.Fatal(err)
 	}
 
-	log.Printf("successfully stored vault token at %s", dest)
+	log.Printf("successfully stored vault token at %s", tokenDest)
+	log.Printf("successfully stored vault accessor at %s", accessorDest)
 
 	os.Exit(0)
 }
@@ -99,11 +109,11 @@ func readJwtToken(path string) (string, error) {
 	return string(bytes.TrimSpace(data)), nil
 }
 
-func authenticate(role, jwt string) (string, error) {
+func authenticate(role, jwt string) (string, string, error) {
 	// Setup the TLS (especially required for custom CAs)
 	rootCAs, err := rootCAs()
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
 	tlsClientConfig := &tls.Config{
@@ -124,7 +134,7 @@ func authenticate(role, jwt string) (string, error) {
 	}
 
 	if err := http2.ConfigureTransport(transport); err != nil {
-		return "", errors.New("failed to configure http2")
+		return "", "", errors.New("failed to configure http2")
 	}
 
 	client := &http.Client{
@@ -137,37 +147,45 @@ func authenticate(role, jwt string) (string, error) {
 	req, err := http.NewRequest(http.MethodPost, addr, strings.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
 	if err != nil {
-		return "", errors.Wrap(err, "failed to create request")
+		return "", "", errors.Wrap(err, "failed to create request")
 	}
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return "", errors.Wrap(err, "failed to login")
+		return "", "", errors.Wrap(err, "failed to login")
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
 		var b bytes.Buffer
 		io.Copy(&b, resp.Body)
-		return "", fmt.Errorf("failed to get successful response: %#v, %s",
+		return "", "", fmt.Errorf("failed to get successful response: %#v, %s",
 			resp, b.String())
 	}
 
 	var s struct {
 		Auth struct {
 			ClientToken string `json:"client_token"`
+			ClientAccessor string `json:"accessor"`
 		} `json:"auth"`
 	}
 
 	if err := json.NewDecoder(resp.Body).Decode(&s); err != nil {
-		return "", errors.Wrap(err, "failed to read body")
+		return "", "", errors.Wrap(err, "failed to read body")
 	}
 
-	return s.Auth.ClientToken, nil
+	return s.Auth.ClientToken, s.Auth.ClientAccessor, nil
 }
 
 func saveToken(token, dest string) error {
 	if err := ioutil.WriteFile(dest, []byte(token), 0600); err != nil {
+		return errors.Wrap(err, "failed to save token")
+	}
+	return nil
+}
+
+func saveAccessor(accessor, dest string) error {
+	if err := ioutil.WriteFile(dest, []byte(accessor), 0644); err != nil {
 		return errors.Wrap(err, "failed to save token")
 	}
 	return nil
