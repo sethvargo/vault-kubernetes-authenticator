@@ -1,7 +1,3 @@
-- [vault-kubernetes-authenticator](#vault-kubernetes-authenticator)
-  - [Configuration](#configuration)
-  - [Example Usage](#example-usage)
-
 # vault-kubernetes-authenticator
 
 The `vault-kubernetes-authenticator` is a small application/container that performs the [HashiCorp Vault][vault] [kubernetes authentication process][vault-k8s-auth] and places the Vault token in a well-known, configurable location. It is most commonly used as an init container to supply a Vault token to applications or services that are unaware of Vault.
@@ -25,6 +21,7 @@ The `vault-kubernetes-authenticator` is a small application/container that perfo
 - `VAULT_ROLE` - **Required** the name of the Vault role to use for authentication.
 
 - `TOKEN_DEST_PATH` - the destination path on disk to store the token. Usually this is a shared volume. Defaults to `/.vault-token`.
+
 - `ACCESSOR_DEST_PATH` - the destination path on disk to store the accessor. Usually this is a shared volume. Defaults to `/.vault-accessor`.
 
 - `SERVICE_ACCOUNT_PATH` - the path on disk where the kubernetes service account jtw token lives. This defaults to `/var/run/secrets/kubernetes.io/serviceaccount/token`.

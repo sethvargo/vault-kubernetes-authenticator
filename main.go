@@ -62,6 +62,7 @@ func main() {
 	if tokenDest == "" {
 		tokenDest = "/.vault-token"
 	}
+
 	accessorDest := os.Getenv("ACCESSOR_DEST_PATH")
 	if accessorDest == "" {
 		accessorDest = "/.vault-accessor"
@@ -88,7 +89,7 @@ func main() {
 	if err := saveToken(token, tokenDest); err != nil {
 		log.Fatal(err)
 	}
-	
+
 	// Persist the vault accessor to disk
 	if err := saveAccessor(accessor, accessorDest); err != nil {
 		log.Fatal(err)
@@ -165,7 +166,7 @@ func authenticate(role, jwt string) (string, string, error) {
 
 	var s struct {
 		Auth struct {
-			ClientToken string `json:"client_token"`
+			ClientToken    string `json:"client_token"`
 			ClientAccessor string `json:"accessor"`
 		} `json:"auth"`
 	}
