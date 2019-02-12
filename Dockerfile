@@ -20,4 +20,4 @@ RUN go build -a -installsuffix cgo -o /bin/app .
 FROM scratch
 ADD https://curl.haxx.se/ca/cacert.pem /etc/ssl/certs/ca-certificates.crt
 COPY --from=builder /bin/app /bin/app
-CMD ['/bin/app']
+CMD ["/bin/app"]
