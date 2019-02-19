@@ -20,9 +20,9 @@ The `vault-kubernetes-authenticator` is a small application/container that perfo
 
 - `VAULT_ROLE` - **Required** the name of the Vault role to use for authentication.
 
-- `TOKEN_DEST_PATH` - the destination path on disk to store the token. Usually this is a shared volume. Defaults to `/.vault-token`.
+- `TOKEN_DEST_PATH` - the destination path on disk to store the token. Usually this is a shared volume. Defaults to `/var/run/secrets/vaultproject.io/.vault-token`.
 
-- `ACCESSOR_DEST_PATH` - the destination path on disk to store the accessor. Usually this is a shared volume. Defaults to `/.vault-accessor`.
+- `ACCESSOR_DEST_PATH` - the destination path on disk to store the accessor. Usually this is a shared volume. Defaults to `/var/run/secrets/vaultproject.io/.vault-accessor`.
 
 - `SERVICE_ACCOUNT_PATH` - the path on disk where the kubernetes service account jtw token lives. This defaults to `/var/run/secrets/kubernetes.io/serviceaccount/token`.
 
@@ -39,26 +39,32 @@ The `vault-kubernetes-authenticator` is a small application/container that perfo
 apiVersion: v1
 kind: Pod
 metadata:
-  name: vault-sidecar
+  name: vault-auther
 spec:
+  securityContext:
+    runAsUser: 1001
+    fsGroup: 1001
+
   volumes:
-  - name: vault-token
+  - name: vault-auth
+    emptyDir:
+      medium: Memory
+  - name: vault-secrets
     emptyDir:
       medium: Memory
 
   initContainers:
-  # The vault-authenticator container authenticates the container using the
-  # kubernetes auth method and puts the resulting token on the filesystem.
   - name: vault-authenticator
-    image: sethvargo/vault-kubernetes-authenticator:latest
+    image: sethvargo/vault-kubernetes-authenticator:0.2.0
+    imagePullPolicy: Always
     volumeMounts:
-    - name: vault-token
-      mountPath: /home/vault
+    - name: vault-auth
+      mountPath: /var/run/secrets/vaultproject.io
     env:
-    - name: TOKEN_DEST_PATH
-      value: /home/vault/.vault-token
     - name: VAULT_ROLE
       value: myapp-role
+    securityContext:
+      allowPrivilegeEscalation: false
 
   containers:
     # Your other containers would read from /home/vault/.vault-token, or set
@@ -66,8 +72,10 @@ spec:
   - name: consul-template
     image: hashicorp/consul-template:0.19.5.alpine
     volumeMounts:
-    - name: vault-token
+    - name: vault-auth
       mountPath: /home/vault
+    - name: vault-secrets
+      mountPath: /var/run/secrets/vaultproject.io
     env:
     - name: HOME
       value: /home/vault

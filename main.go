@@ -60,12 +60,12 @@ func main() {
 
 	tokenDest := os.Getenv("TOKEN_DEST_PATH")
 	if tokenDest == "" {
-		tokenDest = "/.vault-token"
+		tokenDest = "/var/run/secrets/vaultproject.io/.vault-token"
 	}
 
 	accessorDest := os.Getenv("ACCESSOR_DEST_PATH")
 	if accessorDest == "" {
-		accessorDest = "/.vault-accessor"
+		accessorDest = "/var/run/secrets/vaultproject.io/.vault-accessor"
 	}
 
 	saPath := os.Getenv("SERVICE_ACCOUNT_PATH")

@@ -17,7 +17,16 @@ RUN go build -a -installsuffix cgo -o /bin/app .
 
 
 
-FROM scratch
-ADD https://curl.haxx.se/ca/cacert.pem /etc/ssl/certs/ca-certificates.crt
+FROM alpine:latest
+RUN apk --no-cache add ca-certificates && \
+  update-ca-certificates
+
+RUN addgroup -g 1001 appgroup && \
+  adduser -H -D -s /bin/false -G appgroup -u 1001 appuser
+
+RUN mkdir -p /var/run/secrets/vaultproject.io/ && \
+  chown -R 1001:1001 /var/run/secrets/vaultproject.io/
+
+USER 1001:1001
 COPY --from=builder /bin/app /bin/app
 CMD ["/bin/app"]
