@@ -142,6 +142,8 @@ func authenticate(role, jwt string) (string, string, error) {
 		Transport: transport,
 	}
 
+	transport.Proxy = http.ProxyFromEnvironment
+
 	addr := vaultAddr + "/v1/auth/" + vaultK8SMountPath + "/login"
 	body := fmt.Sprintf(`{"role": "%s", "jwt": "%s"}`, role, jwt)
 
