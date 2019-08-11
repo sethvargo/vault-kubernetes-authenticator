@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.3.0] - 2019-08-10
+## [0.4.0] - 2019-08-10
 
 ### Added
 - Support for Vault namespaces
