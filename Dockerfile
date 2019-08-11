@@ -1,19 +1,21 @@
-FROM golang:1.12.6 AS builder
+FROM golang:1.12 AS builder
 
-ENV GO111MODULE=on
-ENV CGO_ENABLED=0
-ENV GOOS=linux
-ENV GOARCH=amd64
+ENV GO111MODULE=on \
+  CGO_ENABLED=0 \
+  GOOS=linux \
+  GOARCH=amd64
 
 WORKDIR /src
-
-COPY go.mod .
-COPY go.sum .
-RUN go mod download
-
 COPY . .
 
-RUN go build -a -installsuffix cgo -o /bin/app .
+RUN go build \
+  -a \
+  -ldflags "-s -w -extldflags 'static'" \
+  -installsuffix cgo \
+  -tags netgo \
+  -mod vendor \
+  -o /bin/app \
+  .
 
 
 

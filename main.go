@@ -24,6 +24,7 @@ var (
 	vaultCaPem        string
 	vaultCaCert       string
 	vaultCaPath       string
+	vaultNamespace    string
 	vaultSkipVerify   bool
 	vaultServerName   string
 	vaultK8SMountPath string
@@ -38,6 +39,7 @@ func main() {
 	vaultCaPem = os.Getenv("VAULT_CAPEM")
 	vaultCaCert = os.Getenv("VAULT_CACERT")
 	vaultCaPath = os.Getenv("VAULT_CAPATH")
+	vaultNamespace = os.Getenv("VAULT_NAMESPACE")
 	vaultServerName = os.Getenv("VAULT_TLS_SERVER_NAME")
 
 	if s := os.Getenv("VAULT_SKIP_VERIFY"); s != "" {
@@ -152,6 +154,9 @@ func authenticate(role, jwt string) (string, string, error) {
 	if err != nil {
 		return "", "", errors.Wrap(err, "failed to create request")
 	}
+	if vaultNamespace != "" {
+		req.Header.Set("X-Vault-Namespace", vaultNamespace)
+	}
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -161,7 +166,9 @@ func authenticate(role, jwt string) (string, string, error) {
 
 	if resp.StatusCode != 200 {
 		var b bytes.Buffer
-		io.Copy(&b, resp.Body)
+		if _, err := io.Copy(&b, resp.Body); err != nil {
+			log.Printf("failed to copy response body: %s", err)
+		}
 		return "", "", fmt.Errorf("failed to get successful response: %#v, %s",
 			resp, b.String())
 	}

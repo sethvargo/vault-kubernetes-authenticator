@@ -20,6 +20,8 @@ The `vault-kubernetes-authenticator` is a small application/container that perfo
 
 - `VAULT_ROLE` - **Required** the name of the Vault role to use for authentication.
 
+- `VAULT_NAMESPACE` - the [Vault namespace](https://www.vaultproject.io/docs/enterprise/namespaces/index.html#usage), only available in Vault Enterprise
+
 - `TOKEN_DEST_PATH` - the destination path on disk to store the token. Usually this is a shared volume. Defaults to `/var/run/secrets/vaultproject.io/.vault-token`.
 
 - `ACCESSOR_DEST_PATH` - the destination path on disk to store the accessor. Usually this is a shared volume. Defaults to `/var/run/secrets/vaultproject.io/.vault-accessor`.
